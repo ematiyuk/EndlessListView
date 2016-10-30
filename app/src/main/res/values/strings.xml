@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">EndlessListView</string>
+    <string name="fill_db_progress_msg">Filling database&#8230;</string>
+    <string name="change_cached_elements_title_string">Change cached elements</string>
+
+    <plurals name="dialog_elements_plural">
+        <item quantity="one">Element</item>
+        <item quantity="other">Elements</item>
+    </plurals>
+</resources>
