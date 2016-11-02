@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         final NumberPicker numberPicker = (NumberPicker) numPickerView.findViewById(R.id.cachedElementsNumberPicker);
 
         numberPicker.setMaxValue(1000);
-        numberPicker.setMinValue(0);
+        numberPicker.setMinValue(mMaxElementsInMemory);
         numberPicker.setValue(mMaxElementsInMemory);
 
         // disable soft keyboard autoshowing
@@ -123,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
      * @return <code>true</code> if data has been loaded, otherwise - <code>false</code>
      */
     public boolean loadNextData(int offset) {
-        ArrayList<User> users = UserStorage.get(this).getUsersRange(offset, mMaxElementsInMemory);
+        ArrayList<User> users = UserStorage.get(this).getUsersRange(offset,
+                mMaxElementsInMemory - mAdapter.getCount());
         if (users == null || users.isEmpty()) return false; // more data isn't being loaded
 
         mAdapter.addAll(users); // append previously fetched data into the adapter
