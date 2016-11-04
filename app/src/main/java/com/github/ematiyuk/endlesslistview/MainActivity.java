@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -19,13 +18,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private ArrayAdapter<User> mAdapter;
+    private UserAdapter mAdapter;
     private ListView mListView;
 
     private ProgressDialog mProgressDialog;
 
     private static final int DEFAULT_MAX_ELEMENTS_IN_MEMORY = 50;
-    private int mMaxElementsInMemory = DEFAULT_MAX_ELEMENTS_IN_MEMORY;
+    private int mCachedElements = DEFAULT_MAX_ELEMENTS_IN_MEMORY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +74,8 @@ public class MainActivity extends AppCompatActivity {
         final NumberPicker numberPicker = (NumberPicker) numPickerView.findViewById(R.id.cachedElementsNumberPicker);
 
         numberPicker.setMaxValue(1000);
-        numberPicker.setMinValue(mMaxElementsInMemory);
-        numberPicker.setValue(mMaxElementsInMemory);
+        numberPicker.setMinValue(0);
+        numberPicker.setValue(mCachedElements);
 
         // disable soft keyboard autoshowing
         numberPicker.setDescendantFocusability(NumberPicker.FOCUS_AFTER_DESCENDANTS);
@@ -89,9 +88,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // set respective plural string (depends on mMaxElementsInMemory value)
+        // set respective plural string (depends on mCachedElements value)
         // before AlertDialog showing
-        elementsTextView.setText(getElementsPluralString(mMaxElementsInMemory));
+        elementsTextView.setText(getElementsPluralString(mCachedElements));
 
         // create and config AlertDialog
         new AlertDialog.Builder(this)
@@ -100,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        mMaxElementsInMemory = numberPicker.getValue();
+                        mCachedElements = numberPicker.getValue();
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -123,12 +122,10 @@ public class MainActivity extends AppCompatActivity {
      * @return <code>true</code> if data has been loaded, otherwise - <code>false</code>
      */
     public boolean loadNextData(int offset) {
-        ArrayList<User> users = UserStorage.get(this).getUsersRange(offset,
-                mMaxElementsInMemory - mAdapter.getCount());
+        ArrayList<User> users = UserStorage.get(this).getUsersRange(offset, mCachedElements);
         if (users == null || users.isEmpty()) return false; // more data isn't being loaded
 
         mAdapter.addAll(users); // append previously fetched data into the adapter
-        mAdapter.notifyDataSetChanged();
 
         return true; // more data is actually being loaded
     }
@@ -156,10 +153,9 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(aVoid);
 
             // fetch the first set of items
-            ArrayList<User> users = UserStorage.get(MainActivity.this)
-                    .getUsersRange(0, mMaxElementsInMemory);
+            ArrayList<User> users = UserStorage.get(MainActivity.this).getUsersRange(0, mCachedElements);
 
-            mAdapter = new ArrayAdapter<>(MainActivity.this, R.layout.list_item, users);
+            mAdapter = new UserAdapter(MainActivity.this, users);
             mListView.setAdapter(mAdapter);
 
             mProgressDialog.dismiss();
